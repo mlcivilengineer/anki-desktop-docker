@@ -1,0 +1,2 @@
+#!/bin/bash
+curl localhost:8765 -X POST -d '{"action": "sync", "version": 6}'

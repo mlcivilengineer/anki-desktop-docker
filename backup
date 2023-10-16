@@ -1,0 +1,18 @@
+#!/bin/bash
+# Define the prefix, extension, and current date/time components
+prefix="/config/app/backups/"
+extension="apkg"
+current_date="$(date +'%Y_%m_%d_%H_%M_%S')"
+
+# Combine the components to create the file name
+file_name="${prefix}_${current_date}.${extension}"
+
+curl localhost:8765 -X POST -d  '{
+    "action": "exportPackage",
+    "version": 6,
+    "params": {
+        "deck": "Default",
+        "path": "'$file_name'",  
+        "includeSched": true
+    }
+}'

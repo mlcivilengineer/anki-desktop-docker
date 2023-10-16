@@ -1,0 +1,7 @@
+sudo chown -R abc:abc /config/app &&
+ mkdir -p /config/app/Anki2 &&
+ mkdir -p /config/app/Anki &&
+ export DISABLE_QT5_COMPAT=1 &&
+export LC_ALL=en_US.UTF-8 && anki
+
+
