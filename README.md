@@ -51,7 +51,7 @@ services:
 In this docker-compose file, the first volume provides anki with the configuration, which in linux normally resides in the ~/.local/share/Anki2 directory. This way, all the cards and addons will be there when you run the container, and any changes will persist to the host. The second volume provides a way to get backups out of the container and into the host machine, using something like curl posting to ankiconnect at port 8765. Clone the repository, edit the docker-compose.yml file to your needs (point to the right directory for the anki configuration files, which are normally at ~/.local/share/Anki2 at an ubuntu distroand use the following command in the terminal:
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
 You now should be able to open anki at a browser with the following URL:
