@@ -15,7 +15,7 @@ This is inspired by the work of https://github.com/pnorcross/anki-desktop-docker
 
 ### Dockerfile
 
-Used to build the container. Here we install Anki 2.1.66 (if you would like you can change the version of anki at the Dockerfile, but compatibility is not guaranteed)
+Used to build the container. Here we install Anki 23.10 (if you would like you can change the version of anki at the Dockerfile, but compatibility is not guaranteed)
 
 ### docker_installation file
 This file provides the commands to install docker in an ubuntu distro.
