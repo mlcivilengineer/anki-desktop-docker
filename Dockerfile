@@ -1,6 +1,6 @@
-FROM lsiobase/kasmvnc:ubuntujammy
+FROM lsiobase/kasmvnc:ubuntunoble
 
-ARG ANKI_VERSION=23.12.1
+ARG ANKI_VERSION=25.02.7
 
 RUN \
   apt-get update && \
