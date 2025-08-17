@@ -4,7 +4,7 @@ This project is inspired by [pnorcross/anki-desktop-docker](https://github.com/p
 
 Why? Because it makes automating Anki (with addons like AnkiConnect) easier.
 
-The Anki desktop app runs in a browser (via VNC) on port `3000`. Your Anki data is stored in a volume mounted at `/config/app` inside the container.
+The Anki desktop app runs in a browser (via VNC) on port `3000`. Your Anki data is stored in `anki_data` mounted as a volume at '/config` inside the container.
 
 ---
 
