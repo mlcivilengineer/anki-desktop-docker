@@ -1,2 +1,11 @@
 .env
-docker-compose.yml
+# Ignore everything in config
+config/*
+
+# But don't ignore these specific files
+!config/app/
+!config/app/Anki2/
+!config/app/Anki2/config.json
+!config/app/Anki2/menu.xml
+!config/app/backups/
+!config/app/backups/.gitkeep

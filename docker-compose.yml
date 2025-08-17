@@ -1,0 +1,13 @@
+services:
+  anki-desktop:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./config:/config
+    ports:
+      - 3000:3000  # Web UI
+      - 8765:8765  # AnkiConnect
