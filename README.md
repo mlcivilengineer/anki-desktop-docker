@@ -21,7 +21,7 @@ The Anki desktop app runs in a browser (via VNC) on port `3000`. Your Anki data 
 ## Files in This Repo
 
 ### `Dockerfile`
-Builds the container with Anki 25.02.7 You can change the Anki version, but compatibility may vary.
+Builds the container with Anki 25.07.5 You can change the Anki version, but compatibility may vary.
 
 ### `docker_installation`
 Contains commands to install Docker on Ubuntu.
