@@ -66,6 +66,7 @@ If you prefer docker compose instead, use the `docker-compose.yml` in the root o
 ```yaml
 services:
   anki-desktop:
+    image: mlcivilengineer/anki-desktop-docker:main
     build:
       context: ./
       dockerfile: Dockerfile
@@ -77,6 +78,7 @@ services:
     ports:
       - 3000:3000  # Web UI
       - 8765:8765  # AnkiConnect
+
 ````
 
 
