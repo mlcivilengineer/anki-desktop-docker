@@ -2,7 +2,7 @@
 
 This project is inspired by [pnorcross/anki-desktop-docker](https://github.com/pnorcross/anki-desktop-docker), with a few tweaks. It provides a `Dockerfile` that uses [linuxserver/docker-baseimage-kasmvnc](https://github.com/linuxserver/docker-baseimage-kasmvnc) as the base image to run the desktop version of Anki inside a container.
 
-Why? Because it makes automating Anki (with addons like AnkiConnect) easier and is super handy if you're using FSRS, especially since AnkiDroid doesn’t support it.
+Why? Because it makes automating Anki (with addons like AnkiConnect) easier.
 
 The Anki desktop app runs in a browser (via VNC) on port `3000`. Your Anki data is stored in a volume mounted at `/config/app` inside the container.
 
@@ -15,7 +15,6 @@ The Anki desktop app runs in a browser (via VNC) on port `3000`. Your Anki data 
 - **Ubuntu** (focus is on Linux, but Docker can work on Windows too with a slightly different setup)
 - **cron** (for scheduling tasks)
 - **AnkiConnect addon** (to enable scripting Anki via port `8765`)
-- **FSRS4Anki Helper addon** (to reschedule cards)
 
 ---
 

@@ -1,0 +1,21 @@
+.git/
+.gitignore
+.dockerignore
+README.md
+backup
+cleanup
+sync
+
+# OS and editor junk
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Docker Compose/local build files
+docker-compose.yml
+
+# Runtime files
+config/
+*.log
+
