@@ -42,17 +42,22 @@ Also uses `curl` to call AnkiConnect. It forces a sync and optionally reschedule
 Create a `docker-compose.yml` in the root of the repo:
 
 ```yaml
-services:
-  anki-desktop:
-    build:
+services: 
+  anki-desktop: 
+    build: 
       context: ./
       dockerfile: Dockerfile
+    environment:
+      - PUID=1000
+      - PGID=1000
     volumes:
       - ~/.local/share/Anki2:/config/app/Anki2
       - ~/backups:/config/app/backups
-    ports:
-      - 3000:3000  # Web UI
-      - 8765:8765  # AnkiConnect
+    ports: 
+      - 3000:3000
+      # Anki Connect port
+      - 8765:8765
+
 ````
 
 * The **first volume** maps your local Anki data (on Ubuntu it's usually at `~/.local/share/Anki2`) into the container.
