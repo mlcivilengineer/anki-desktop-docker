@@ -37,9 +37,32 @@ Also uses `curl` to call AnkiConnect. It forces a sync and optionally reschedule
 
 ---
 
+## How to run
+
+If you want you can run this using the image `mlcivilengineer/anki-desktop-docker` which is automatically built using Github Actions in this repo. Use the following command:
+```bash
+docker run -d \
+    --name anki-desktop \
+    -e PUID=1000 \
+    -e PGID=1000 \
+    -v "$(pwd)/anki_data:/config" \
+    -p 3000:3000 \
+    -p 8765:8765 \
+    mlcivilengineer/anki-desktop-docker:latest
+```
+
+Then open your browser and head to:
+
+```
+http://localhost:3000
+```
+
+Press Enter after Anki is installed for the first time. Now you can use it as normal. In order to sync with the other clients, put your sync information in the Sync tab.
+
+
 ## Docker Compose Setup
 
-Use the `docker-compose.yml` in the root of the repo:
+If you prefer docker compose instead, use the `docker-compose.yml` in the root of the repo:
 ```yaml
 services:
   anki-desktop:
@@ -50,7 +73,7 @@ services:
       - PUID=1000
       - PGID=1000
     volumes:
-      - ./config:/config
+      - ./anki_data:/config
     ports:
       - 3000:3000  # Web UI
       - 8765:8765  # AnkiConnect
@@ -62,16 +85,8 @@ To get started:
 ```bash
 git clone <this-repo>
 cd anki-desktop-docker
-docker compose up --build -d
+docker compose up -d
 ```
-
-Then open your browser and head to:
-
-```
-http://localhost:3000
-```
-
-Press Enter after Anki is installed for the first time. Now you can use it as normal. In order to sync with the other clients, put your sync information in the Sync tab.
 
 ---
 
