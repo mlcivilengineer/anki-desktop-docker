@@ -16,6 +16,6 @@ sync
 docker-compose.yml
 
 # Runtime files
-config/
+anki_data/
 *.log
 
