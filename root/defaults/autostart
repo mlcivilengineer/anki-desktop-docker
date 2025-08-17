@@ -1,8 +1,6 @@
 # Set layout to avoid keybinding warnings
 setxkbmap -layout us &
 
-sudo chown -R 1000:1000 /config/app
-
 export DISABLE_QT5_COMPAT=1
 export LC_ALL=en_US.UTF-8
 
