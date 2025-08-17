@@ -39,8 +39,7 @@ Also uses `curl` to call AnkiConnect. It forces a sync and optionally reschedule
 
 ## Docker Compose Setup
 
-Create a `docker-compose.yml` in the root of the repo:
-
+Use the `docker-compose.yml` in the root of the repo:
 ```yaml
 services:
   anki-desktop:
@@ -72,12 +71,13 @@ Then open your browser and head to:
 http://localhost:3000
 ```
 
+Press Enter after Anki is installed for the first time. Now you can use it as normal. In order to sync with the other clients, put your sync information in the Sync tab.
+
 ---
 
 ## AnkiConnect Configuration
 
-Make sure your AnkiConnect config (inside Anki) looks like this:
-
+If you want to expose the Anki client to http requests, make sure to install the [AnkiConnect](https://ankiweb.net/shared/info/2055492159) Add-on and to configure the Add-on with:
 ```json
 {
     "apiKey": null,

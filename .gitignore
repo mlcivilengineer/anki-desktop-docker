@@ -1,11 +1,6 @@
 .env
 # Ignore everything in config
-config/*
+anki_data/*
 
 # But don't ignore these specific files
-!config/app/
-!config/app/Anki2/
-!config/app/Anki2/config.json
-!config/app/Anki2/menu.xml
-!config/app/backups/
-!config/app/backups/.gitkeep
+!anki_data/.gitkeep
