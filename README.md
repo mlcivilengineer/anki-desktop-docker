@@ -48,7 +48,7 @@ docker run -d \
     -v "$(pwd)/anki_data:/config" \
     -p 3000:3000 \
     -p 8765:8765 \
-    mlcivilengineer/anki-desktop-docker:latest
+    mlcivilengineer/anki-desktop-docker:main
 ```
 
 Then open your browser and head to:
