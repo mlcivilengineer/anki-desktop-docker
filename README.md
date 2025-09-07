@@ -92,6 +92,21 @@ docker compose up -d
 
 ---
 
+## Optional: CJK Font Support
+
+If you need support for Chinese, Japanese, or Korean (CJK) characters in your Anki cards, you can enable this by uncommenting the following environment variables in the `docker-compose.yml` file:
+
+```yaml
+environment:
+  - PUID=1000
+  - PGID=1000
+  # Uncomment the following lines to enable CJK font support
+  - DOCKER_MODS=linuxserver/mods:universal-package-install
+  - INSTALL_PACKAGES=language-pack-zh-hans|fonts-arphic-ukai|fonts-arphic-uming|fonts-ipafont-mincho|fonts-ipafont-gothic|fonts-unfonts-core
+```
+
+After making these changes, rebuild your container for the changes to take effect.
+
 ## AnkiConnect Configuration
 
 If you want to expose the Anki client to http requests, make sure to install the [AnkiConnect](https://ankiweb.net/shared/info/2055492159) Add-on and to configure the Add-on with:
