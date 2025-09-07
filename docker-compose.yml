@@ -7,6 +7,9 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
+      # Uncomment the following lines to enable CJK font support
+      # - DOCKER_MODS=linuxserver/mods:universal-package-install
+      # - INSTALL_PACKAGES=language-pack-zh-hans|fonts-arphic-ukai|fonts-arphic-uming|fonts-ipafont-mincho|fonts-ipafont-gothic|fonts-unfonts-core
     volumes:
       - ./anki_data:/config
     ports:
