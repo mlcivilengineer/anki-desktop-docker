@@ -3,7 +3,7 @@
     <menu id="root-menu" label="MENU">
         <item label="Anki">
             <action name="Execute">
-                <command>/usr/bin/anki</command>
+                <command>/usr/local/bin/anki</command>
             </action>
         </item>
         <item label="xterm" icon="/usr/share/pixmaps/xterm-color_48x48.xpm">
