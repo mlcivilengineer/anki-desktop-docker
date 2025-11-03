@@ -100,6 +100,10 @@ If you're deploying this application with [Coolify](https://coolify.io/) using *
 
 1. Coolify v4 installed with Traefik as reverse proxy
 2. A domain name pointing to your Coolify server
+3. DNS configuration:
+   - **Main domain**: `anki.yourdomain.com` → Your Coolify server IP
+   - **API subdomain**: `api.anki.yourdomain.com` → Your Coolify server IP
+   - **OR** use wildcard DNS: `*.yourdomain.com` → Your Coolify server IP
 
 ### Setup Steps
 
@@ -129,25 +133,34 @@ If you're deploying this application with [Coolify](https://coolify.io/) using *
 4. **Deploy:**
    - Click "Deploy" in Coolify
    - Wait for the deployment to complete
-   - Access your application at `https://anki.yourdomain.com`
+   - Access your services:
+     - **Web UI**: `https://anki.yourdomain.com` (port 3000 internally)
+     - **AnkiConnect API**: `https://api.anki.yourdomain.com` (port 8765 internally)
 
 ### Features
 
-- **Automatic HTTPS**: Let's Encrypt certificates via Traefik
+- **Automatic HTTPS**: Let's Encrypt certificates via Traefik for both domains
 - **HTTP → HTTPS redirect**: Automatic redirect configured
 - **Gzip compression**: Enabled for better performance
 - **Health checks**: Container health monitoring with auto-restart
 - **Persistent storage**: Data stored in named volume with UUID
 - **Network isolation**: Uses both `coolify` and resource-specific networks
+- **Dual domain setup**:
+  - Web UI on main domain: `${SERVICE_FQDN_ANKI_DESKTOP}`
+  - API on subdomain: `api.${SERVICE_FQDN_ANKI_DESKTOP}`
 
-### Accessing AnkiConnect API
+### Domain Configuration
 
-By default, AnkiConnect (port 8765) is available **only within the Docker network** for security. If you need external access:
+The application is configured to serve:
+- **Web Interface (KasmVNC)**: `https://anki.yourdomain.com`
+- **AnkiConnect API**: `https://api.anki.yourdomain.com`
 
-1. Uncomment the AnkiConnect Traefik labels in `docker-compose.yml` (lines 66-76)
-2. Add `SERVICE_FQDN_ANKICONNECT` environment variable in Coolify (e.g., `ankiconnect.yourdomain.com`)
-3. Redeploy the application
-4. Access AnkiConnect at `https://ankiconnect.yourdomain.com`
+Both domains are automatically derived from the `SERVICE_FQDN_ANKI_DESKTOP` environment variable:
+- If you set `SERVICE_FQDN_ANKI_DESKTOP=anki.example.com`
+- Web UI will be at: `https://anki.example.com`
+- API will be at: `https://api.anki.example.com`
+
+**To disable external API access**, comment out the AnkiConnect labels in `docker-compose.yml` (lines 68-78).
 
 ### Important Notes
 
@@ -175,7 +188,12 @@ After making these changes, rebuild your container for the changes to take effec
 
 ## AnkiConnect Configuration
 
-If you want to expose the Anki client to http requests, make sure to install the [AnkiConnect](https://ankiweb.net/shared/info/2055492159) Add-on and to configure the Add-on with:
+After deployment, you need to install and configure the [AnkiConnect](https://ankiweb.net/shared/info/2055492159) Add-on:
+
+1. Open Anki in the web interface at `https://anki.yourdomain.com`
+2. Install AnkiConnect add-on (code: `2055492159`)
+3. Configure the add-on with the following settings:
+
 ```json
 {
     "apiKey": null,
@@ -183,22 +201,44 @@ If you want to expose the Anki client to http requests, make sure to install the
     "ignoreOriginList": [],
     "webBindAddress": "0.0.0.0",
     "webBindPort": 8765,
-    "webCorsOrigin": "http://localhost",
-    "webCorsOriginList": ["*"]
+    "webCorsOrigin": "https://api.anki.yourdomain.com",
+    "webCorsOriginList": [
+        "https://api.anki.yourdomain.com",
+        "http://localhost",
+        "*"
+    ]
 }
+```
+
+4. Restart Anki for changes to take effect
+5. Test the API at `https://api.anki.yourdomain.com`
+
+**Example API request:**
+```bash
+curl -X POST https://api.anki.yourdomain.com \
+  -H "Content-Type: application/json" \
+  -d '{"action": "version", "version": 6}'
 ```
 
 ---
 
 ## Cron Example
 
-Open your crontab:
+When using Coolify deployment with the API subdomain, you can access AnkiConnect remotely. Open your crontab:
 
 ```bash
 crontab -e
 ```
 
-And add:
+And add (replace `api.anki.yourdomain.com` with your actual domain):
+
+```cron
+# Using remote API endpoint
+0 8 * * * curl -X POST https://api.anki.yourdomain.com -H "Content-Type: application/json" -d '{"action":"sync","version":6}' >> ~/anki-sync.log 2>&1
+0 9 * * * curl -X POST https://api.anki.yourdomain.com -H "Content-Type: application/json" -d '{"action":"exportPackage","version":6,"params":{"deck":"All","path":"/config/backup.apkg"}}' >> ~/anki-backup.log 2>&1
+```
+
+**For local deployment**, you can use the original scripts:
 
 ```cron
 0 8 * * * (~/anki-desktop-docker/sync && date) >> ~/sync.log 2>&1
@@ -210,5 +250,5 @@ This sets up:
 
 * **8:00 UTC** — Sync
 * **9:00 UTC** — Backup
-* **10:00 & 22:00 UTC** — Cleanup
+* **10:00 & 22:00 UTC** — Cleanup (only needed for local deployment)
 

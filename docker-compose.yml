@@ -59,21 +59,23 @@ services:
       # HTTPS router for Web UI (port 3000)
       - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.entryPoints=https
       - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.middlewares=gzip
-      - 'traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.rule=Host(`${SERVICE_FQDN_ANKI_DESKTOP}`) && PathPrefix(`/`)'
+      - 'traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.rule=Host(`${SERVICE_FQDN_ANKI_DESKTOP}`)'
       - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.tls.certresolver=letsencrypt
       - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.tls=true
+      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.service=anki-web-${COOLIFY_RESOURCE_UUID}
+      - traefik.http.services.anki-web-${COOLIFY_RESOURCE_UUID}.loadbalancer.server.port=3000
 
-      # Optional: Traefik labels for AnkiConnect API (port 8765)
-      # Uncomment if you need external access to AnkiConnect on a separate subdomain
-      # - traefik.http.routers.http-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.entryPoints=http
-      # - traefik.http.routers.http-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.middlewares=redirect-to-https
-      # - 'traefik.http.routers.http-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.rule=Host(`${SERVICE_FQDN_ANKICONNECT}`) && PathPrefix(`/`)'
-      # - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.entryPoints=https
-      # - 'traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.rule=Host(`${SERVICE_FQDN_ANKICONNECT}`) && PathPrefix(`/`)'
-      # - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.tls.certresolver=letsencrypt
-      # - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.tls=true
-      # - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.service=ankiconnect-${COOLIFY_RESOURCE_UUID}
-      # - traefik.http.services.ankiconnect-${COOLIFY_RESOURCE_UUID}.loadbalancer.server.port=8765
+      # AnkiConnect API on subdomain api.${SERVICE_FQDN_ANKI_DESKTOP} (port 8765)
+      # By default enabled. To disable, comment out the following lines:
+      - traefik.http.routers.http-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.entryPoints=http
+      - traefik.http.routers.http-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.middlewares=redirect-to-https
+      - 'traefik.http.routers.http-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.rule=Host(`api.${SERVICE_FQDN_ANKI_DESKTOP}`)'
+      - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.entryPoints=https
+      - 'traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.rule=Host(`api.${SERVICE_FQDN_ANKI_DESKTOP}`)'
+      - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.tls=true
+      - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.service=ankiconnect-${COOLIFY_RESOURCE_UUID}
+      - traefik.http.services.ankiconnect-${COOLIFY_RESOURCE_UUID}.loadbalancer.server.port=8765
     networks:
       - ${COOLIFY_RESOURCE_UUID}
       - coolify
