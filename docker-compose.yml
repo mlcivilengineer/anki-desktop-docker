@@ -17,6 +17,12 @@ services:
       SERVICE_URL_ANKI_DESKTOP: '${SERVICE_URL_ANKI_DESKTOP}'
       COOLIFY_URL: '${COOLIFY_URL}'
       COOLIFY_FQDN: '${COOLIFY_FQDN}'
+
+      # Basic Auth credentials (optional)
+      # Format: username:$$apr1$$hashedpassword
+      # Generate with: htpasswd -nb username password
+      # Or online: https://hostingcanada.org/htpasswd-generator/
+      BASIC_AUTH_CREDENTIALS: '${BASIC_AUTH_CREDENTIALS}'
     volumes:
       - anki-data:/config
     restart: unless-stopped
@@ -51,6 +57,10 @@ services:
       - traefik.http.middlewares.gzip.compress=true
       - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
 
+      # Basic Auth middleware for Web UI
+      # To enable: set BASIC_AUTH_CREDENTIALS and uncomment the line below in middlewares chain
+      - traefik.http.middlewares.anki-auth-${COOLIFY_RESOURCE_UUID}.basicauth.users=${BASIC_AUTH_CREDENTIALS}
+
       # HTTP to HTTPS redirect
       - traefik.http.routers.http-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.entryPoints=http
       - traefik.http.routers.http-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.middlewares=redirect-to-https
@@ -58,7 +68,9 @@ services:
 
       # HTTPS router for Web UI (port 3000)
       - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.entryPoints=https
-      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.middlewares=gzip
+      # Middlewares: uncomment the line with Basic Auth to enable authentication
+      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.middlewares=gzip,anki-auth-${COOLIFY_RESOURCE_UUID}
+      # - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.middlewares=gzip
       - 'traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.rule=Host(`${SERVICE_FQDN_ANKI_DESKTOP}`)'
       - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.tls.certresolver=letsencrypt
       - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki-desktop.tls=true

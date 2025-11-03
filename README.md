@@ -118,10 +118,32 @@ If you're deploying this application with [Coolify](https://coolify.io/) using *
 
 3. **Configure environment variables in Coolify UI:**
 
-   Coolify will automatically inject most variables, but you may need to set:
+   **Required variables:**
    - `SERVICE_FQDN_ANKI_DESKTOP` - Your domain (e.g., `anki.yourdomain.com`)
+   - `BASIC_AUTH_CREDENTIALS` - Basic Auth credentials for web interface (see below)
+
+   **Optional variables:**
    - `IMAGE_TAG` - Docker image tag (default: `main`)
    - `PUID` / `PGID` - User/Group IDs (default: `1000`)
+
+   **Generate Basic Auth credentials:**
+
+   Use htpasswd to generate credentials:
+   ```bash
+   # Install htpasswd (if not installed)
+   sudo apt-get install apache2-utils
+
+   # Generate credentials (replace 'admin' with your username)
+   htpasswd -nb admin yourpassword
+   ```
+
+   Or use online generator: https://hostingcanada.org/htpasswd-generator/
+
+   Example output: `admin:$apr1$abc123$def456ghi789`
+
+   **Important:** In Coolify, paste the entire string (including username and hash) into `BASIC_AUTH_CREDENTIALS` variable.
+
+   **To disable Basic Auth:** Comment out line 72 and uncomment line 73 in docker-compose.yml
 
    Coolify automatically provides these variables:
    - `COOLIFY_RESOURCE_UUID` - Unique resource identifier
@@ -141,13 +163,14 @@ If you're deploying this application with [Coolify](https://coolify.io/) using *
 
 - **Automatic HTTPS**: Let's Encrypt certificates via Traefik for both domains
 - **HTTP → HTTPS redirect**: Automatic redirect configured
+- **Basic Authentication**: Password protection for web interface (configurable via env)
 - **Gzip compression**: Enabled for better performance
 - **Health checks**: Container health monitoring with auto-restart
 - **Persistent storage**: Data stored in named volume with UUID
 - **Network isolation**: Uses both `coolify` and resource-specific networks
 - **Dual domain setup**:
-  - Web UI on main domain: `${SERVICE_FQDN_ANKI_DESKTOP}`
-  - API on subdomain: `api.${SERVICE_FQDN_ANKI_DESKTOP}`
+  - Web UI on main domain: `${SERVICE_FQDN_ANKI_DESKTOP}` (with Basic Auth)
+  - API on subdomain: `api.${SERVICE_FQDN_ANKI_DESKTOP}` (no auth - use AnkiConnect apiKey)
 
 ### Domain Configuration
 
@@ -160,7 +183,28 @@ Both domains are automatically derived from the `SERVICE_FQDN_ANKI_DESKTOP` envi
 - Web UI will be at: `https://anki.example.com`
 - API will be at: `https://api.anki.example.com`
 
-**To disable external API access**, comment out the AnkiConnect labels in `docker-compose.yml` (lines 68-78).
+**To disable external API access**, comment out the AnkiConnect labels in `docker-compose.yml` (lines 80-87).
+
+### Security
+
+The application implements multiple layers of security:
+
+1. **Web Interface (port 3000)**:
+   - Protected by HTTP Basic Authentication (Traefik level)
+   - Requires username/password configured via `BASIC_AUTH_CREDENTIALS`
+   - To disable: comment line 72, uncomment line 73 in docker-compose.yml
+
+2. **AnkiConnect API (port 8765)**:
+   - **Recommended**: Use AnkiConnect's built-in `apiKey` parameter
+   - Configure in AnkiConnect addon settings (see "AnkiConnect Configuration" section below)
+   - Optionally add Basic Auth by duplicating the middleware from Web UI
+
+3. **Additional Security Recommendations**:
+   - Use strong passwords for Basic Auth
+   - Set AnkiConnect `apiKey` in addon configuration
+   - Consider IP whitelisting for known sources
+   - Use Coolify's built-in firewall features
+   - Enable 2FA on Coolify dashboard
 
 ### Important Notes
 
@@ -213,11 +257,20 @@ After deployment, you need to install and configure the [AnkiConnect](https://an
 4. Restart Anki for changes to take effect
 5. Test the API at `https://api.anki.yourdomain.com`
 
-**Example API request:**
+**Example API requests:**
+
+Without apiKey (not recommended for production):
 ```bash
 curl -X POST https://api.anki.yourdomain.com \
   -H "Content-Type: application/json" \
   -d '{"action": "version", "version": 6}'
+```
+
+With apiKey (recommended):
+```bash
+curl -X POST https://api.anki.yourdomain.com \
+  -H "Content-Type: application/json" \
+  -d '{"action": "version", "version": 6, "key": "your-secret-key"}'
 ```
 
 ---
@@ -230,12 +283,12 @@ When using Coolify deployment with the API subdomain, you can access AnkiConnect
 crontab -e
 ```
 
-And add (replace `api.anki.yourdomain.com` with your actual domain):
+And add (replace `api.anki.yourdomain.com` with your actual domain and `your-api-key` with your AnkiConnect apiKey):
 
 ```cron
-# Using remote API endpoint
-0 8 * * * curl -X POST https://api.anki.yourdomain.com -H "Content-Type: application/json" -d '{"action":"sync","version":6}' >> ~/anki-sync.log 2>&1
-0 9 * * * curl -X POST https://api.anki.yourdomain.com -H "Content-Type: application/json" -d '{"action":"exportPackage","version":6,"params":{"deck":"All","path":"/config/backup.apkg"}}' >> ~/anki-backup.log 2>&1
+# Using remote API endpoint with apiKey authentication
+0 8 * * * curl -X POST https://api.anki.yourdomain.com -H "Content-Type: application/json" -d '{"action":"sync","version":6,"key":"your-api-key"}' >> ~/anki-sync.log 2>&1
+0 9 * * * curl -X POST https://api.anki.yourdomain.com -H "Content-Type: application/json" -d '{"action":"exportPackage","version":6,"key":"your-api-key","params":{"deck":"All","path":"/config/backup.apkg"}}' >> ~/anki-backup.log 2>&1
 ```
 
 **For local deployment**, you can use the original scripts:
