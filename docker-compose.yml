@@ -1,17 +1,95 @@
 services:
   anki-desktop:
-    image: mlcivilengineer/anki-desktop-docker:main
-    build:
-      context: ./
-      dockerfile: Dockerfile
+    image: '${IMAGE_NAME:-mlcivilengineer/anki-desktop-docker}:${IMAGE_TAG:-main}'
+    pull_policy: always
     environment:
-      - PUID=1000
-      - PGID=1000
-      # Uncomment the following lines to enable CJK font support
-      # - DOCKER_MODS=linuxserver/mods:universal-package-install
-      # - INSTALL_PACKAGES=language-pack-zh-hans|fonts-arphic-ukai|fonts-arphic-uming|fonts-ipafont-mincho|fonts-ipafont-gothic|fonts-unfonts-core
+      PUID: '${PUID:-1000}'
+      PGID: '${PGID:-1000}'
+      # CJK font support (uncomment if needed)
+      # DOCKER_MODS: linuxserver/mods:universal-package-install
+      # INSTALL_PACKAGES: language-pack-zh-hans|fonts-arphic-ukai|fonts-arphic-uming|fonts-ipafont-mincho|fonts-ipafont-gothic|fonts-unfonts-core
+
+      # Coolify environment variables
+      COOLIFY_BRANCH: '${COOLIFY_BRANCH:-main}'
+      COOLIFY_RESOURCE_UUID: '${COOLIFY_RESOURCE_UUID}'
+      COOLIFY_CONTAINER_NAME: '${COOLIFY_CONTAINER_NAME:-anki-desktop}'
+      SERVICE_FQDN_ANKI: '${SERVICE_FQDN_ANKI}'
+      SERVICE_URL_ANKI: 'https://${SERVICE_FQDN_ANKI}'
+      COOLIFY_URL: 'https://${SERVICE_FQDN_ANKI}'
+      COOLIFY_FQDN: '${SERVICE_FQDN_ANKI}'
     volumes:
       - ./anki_data:/config
-    ports:
-      - 3000:3000  # Web UI
-      - 8765:8765  # AnkiConnect
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - '--no-verbose'
+        - '--tries=1'
+        - '--spider'
+        - 'http://localhost:3000'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    container_name: '${COOLIFY_CONTAINER_NAME:-anki-desktop-${COOLIFY_RESOURCE_UUID}}'
+    labels:
+      # Coolify labels
+      - coolify.managed=true
+      - coolify.version=${COOLIFY_VERSION:-4.0.0-beta.434}
+      - coolify.applicationId=${COOLIFY_APPLICATION_ID}
+      - coolify.type=application
+      - coolify.name=${COOLIFY_CONTAINER_NAME:-anki-desktop}
+      - coolify.resourceName=${COOLIFY_RESOURCE_NAME:-anki-desktop-${COOLIFY_RESOURCE_UUID}}
+      - coolify.projectName=${COOLIFY_PROJECT_NAME:-anki-desktop-docker}
+      - coolify.serviceName=${COOLIFY_SERVICE_NAME:-anki-desktop-${COOLIFY_RESOURCE_UUID}}
+      - coolify.environmentName=${COOLIFY_ENVIRONMENT_NAME:-production}
+      - coolify.pullRequestId=${COOLIFY_PULL_REQUEST_ID:-0}
+
+      # Traefik labels for Web UI (port 3000)
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.http-0-${COOLIFY_RESOURCE_UUID}-anki.entryPoints=http
+      - traefik.http.routers.http-0-${COOLIFY_RESOURCE_UUID}-anki.middlewares=redirect-to-https
+      - traefik.http.routers.http-0-${COOLIFY_RESOURCE_UUID}-anki.rule=Host(`${SERVICE_FQDN_ANKI}`) && PathPrefix(`/`)
+
+      # HTTPS router for Web UI
+      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki.entryPoints=https
+      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki.middlewares=gzip
+      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki.rule=Host(`${SERVICE_FQDN_ANKI}`) && PathPrefix(`/`)
+      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki.tls.certresolver=letsencrypt
+      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki.tls=true
+      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}-anki.service=anki-desktop-${COOLIFY_RESOURCE_UUID}
+      - traefik.http.services.anki-desktop-${COOLIFY_RESOURCE_UUID}.loadbalancer.server.port=3000
+
+      # Optional: Traefik labels for AnkiConnect API (port 8765)
+      # Uncomment if you need external access to AnkiConnect
+      # - traefik.http.routers.http-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.entryPoints=http
+      # - traefik.http.routers.http-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.middlewares=redirect-to-https
+      # - traefik.http.routers.http-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.rule=Host(`${SERVICE_FQDN_ANKICONNECT}`) && PathPrefix(`/`)
+      # - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.entryPoints=https
+      # - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.rule=Host(`${SERVICE_FQDN_ANKICONNECT}`) && PathPrefix(`/`)
+      # - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.tls.certresolver=letsencrypt
+      # - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.tls=true
+      # - traefik.http.routers.https-1-${COOLIFY_RESOURCE_UUID}-ankiconnect.service=ankiconnect-${COOLIFY_RESOURCE_UUID}
+      # - traefik.http.services.ankiconnect-${COOLIFY_RESOURCE_UUID}.loadbalancer.server.port=8765
+    networks:
+      - ${COOLIFY_NETWORK_NAME:-coolify}
+      - ${COOLIFY_RESOURCE_UUID}
+
+volumes: {}
+
+networks:
+  ${COOLIFY_RESOURCE_UUID}:
+    name: ${COOLIFY_RESOURCE_UUID}
+    external: true
+  coolify:
+    name: coolify
+    external: true
+
+configs: {}
+
+secrets: {}
