@@ -1,2 +1,11 @@
 #!/bin/bash
-curl localhost:8765 -X POST -d '{"action": "sync", "version": 6}'
+# Sync with AnkiConnect API
+# Supports optional API key authentication via ANKICONNECT_API_KEY env var
+
+API_KEY="${ANKICONNECT_API_KEY:-}"
+
+if [ -n "$API_KEY" ]; then
+  curl localhost:8765 -X POST -d "{\"action\": \"sync\", \"version\": 6, \"key\": \"$API_KEY\"}"
+else
+  curl localhost:8765 -X POST -d '{"action": "sync", "version": 6}'
+fi

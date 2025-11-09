@@ -4,9 +4,28 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    env_file: .env
     environment:
       - PUID=1000
       - PGID=1000
+      - TZ=UTC
+
+      # AnkiWeb Sync Configuration (optional - for automated setup)
+      # Provide either password OR sync key (sync key is preferred)
+      # - ANKIWEB_USER=your-email@example.com
+      # - ANKIWEB_PASSWORD=your-password
+      # - ANKIWEB_SYNC_KEY=your-16-char-sync-key
+
+      # Auto-sync on container start (default: false)
+      # - AUTO_SYNC_ON_START=false
+
+      # AnkiConnect Configuration (optional - defaults shown)
+      # - ANKICONNECT_BIND_ADDRESS=0.0.0.0
+      # - ANKICONNECT_BIND_PORT=8765
+      # - ANKICONNECT_CORS_ORIGIN=["*"]
+      # - ANKICONNECT_API_KEY=
+      # - ANKICONNECT_API_LOG_PATH=
+
       # Uncomment the following lines to enable CJK font support
       # - DOCKER_MODS=linuxserver/mods:universal-package-install
       # - INSTALL_PACKAGES=language-pack-zh-hans|fonts-arphic-ukai|fonts-arphic-uming|fonts-ipafont-mincho|fonts-ipafont-gothic|fonts-unfonts-core

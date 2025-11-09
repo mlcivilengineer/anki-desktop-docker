@@ -1,4 +1,7 @@
 .env
+.env.local
+CLAUDE.md
+
 # Ignore everything in config
 anki_data/*
 

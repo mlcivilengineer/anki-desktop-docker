@@ -4,4 +4,34 @@ setxkbmap -layout us &
 export DISABLE_QT5_COMPAT=1
 export LC_ALL=en_US.UTF-8
 
-anki
+# Run automated setup before Anki starts (if credentials provided)
+SETUP_MARKER="/config/.local/share/Anki2/.setup_complete"
+AUTO_SYNC="${AUTO_SYNC_ON_START:-true}"
+
+if [ -n "$ANKIWEB_USER" ] && { [ -n "$ANKIWEB_PASSWORD" ] || [ -n "$ANKIWEB_SYNC_KEY" ]; }; then
+    if [ ! -f "/config/.local/share/Anki2/prefs21.db" ]; then
+        echo "[*] Running automated Anki setup..."
+        if python3 /app/scripts/setup_anki.py setup-all --config-dir /config; then
+            echo "[OK] Setup completed successfully"
+            # Mark first-time setup complete for sync trigger
+            mkdir -p /config/.local/share/Anki2
+            touch "$SETUP_MARKER"
+        else
+            echo "[ERROR] Setup failed"
+        fi
+    fi
+fi
+
+# Start Anki GUI
+anki &
+ANKI_PID=$!
+
+# Auto-click sync dialog if first-time setup was done
+if [ "$AUTO_SYNC" = "true" ] && [ -f "$SETUP_MARKER" ]; then
+    echo "[*] Starting GUI automation for initial sync..."
+    /app/scripts/auto_sync_gui.sh &
+    rm -f "$SETUP_MARKER"
+fi
+
+# Wait for Anki process
+wait $ANKI_PID
