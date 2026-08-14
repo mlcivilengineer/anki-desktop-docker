@@ -1,6 +1,6 @@
 FROM lsiobase/kasmvnc:ubuntunoble
 
-ARG ANKI_VERSION=25.07.5
+ARG ANKI_VERSION=26.08.1
 
 # Install dependencies (fix openbox autostart error by installing python3-pyxdg)
 RUN apt-get update && \
@@ -19,10 +19,14 @@ RUN apt-get update && \
 
 # Download, Extract, and Install Anki
 RUN dpkg --remove anki && \
-  wget https://github.com/ankitects/anki/releases/download/${ANKI_VERSION}/anki-launcher-${ANKI_VERSION}-linux.tar.zst && \
-  tar --use-compress-program=unzstd -xvf anki-launcher-${ANKI_VERSION}-linux.tar.zst && \
-  cd anki-launcher-${ANKI_VERSION}-linux && ./install.sh &&  cd .. && \
-  rm -rf anki-launcher-${ANKI_VERSION}-linux anki-launcher-${ANKI_VERSION}-linux.tar.zst
+  wget https://github.com/ankitects/anki/releases/download/${ANKI_VERSION}/anki-${ANKI_VERSION}-linux-x86_64.tar.zst && \
+  tar --use-compress-program=unzstd -xvf anki-${ANKI_VERSION}-linux-x86_64.tar.zst && \
+  ls -a1 && \
+  cd anki-linux && ./install.sh &&  cd .. && \
+  rm -rf anki-linux- anki-${ANKI_VERSION}-linux_x86_64.tar.zst
+
+# Remove some unused packages
+RUN apt autoremove -y
 
 # Create a config directory to be mounted
 RUN mkdir -p /config/.local/share
